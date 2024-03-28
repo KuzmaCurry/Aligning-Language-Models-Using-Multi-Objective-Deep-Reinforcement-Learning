@@ -34,12 +34,10 @@ from transformers import AutoConfig, AutoTokenizer, PhiForSequenceClassification
 # from RM import PhiForSequenceClassification 
 os.environ['MASTER_ADDR'] = 'localhost'
 os.environ['MASTER_PORT'] = '29500'
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3,4,5,6,7'
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 tokenizer.padding_side = "left" # Allow batched inference
 
-# WINDOW_SIZE = 2049
 BATCH_SIZE = 5
 EPOCHS = 1
 log_interval = 600
