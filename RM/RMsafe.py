@@ -77,7 +77,7 @@ class RMDataLoader(torch.utils.data.IterableDataset):
         self.dataset = dataset
     def __iter__(self):
         for data in self.dataset:
-            if data['prompt'] is not None: # process data from PKU-Alignment/PKU-SafeRLHF
+            if data['prompt'] is not None: # process data from PKU-Alignment/PKU-SafeRLHF (safe)
                 x = tokenizer.encode("Instruct: " + data['prompt'].strip() + "\nOutput: " + \
                                      data['response_0'].strip() + '\n' + tokenizer.eos_token) 
                 y = tokenizer.encode("Instruct: " + data['prompt'].strip() + "\nOutput: " + \
@@ -88,7 +88,7 @@ class RMDataLoader(torch.utils.data.IterableDataset):
                     yield x, y
                 else:
                     yield y, x
-            else: # process data from Anthropic/hh-rlhf
+            else: # process data from Anthropic Harmless
                 better = tokenizer(data['chosen'].replace('\nHuman:', 'Instruct:').replace("\nAssistant:", "Output:").strip()+'\n'+tokenizer.eos_token).input_ids
                 worse = tokenizer(data['rejected'].replace('\nHuman:', 'Instruct:').replace("\nAssistant:", "Output:").strip()+'\n'+tokenizer.eos_token).input_ids
                 if len(better) > 512 or len(worse) > 512:
