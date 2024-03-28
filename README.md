@@ -17,11 +17,11 @@ We provide generation examples of the MOLMA, the reference model, and the four S
 In the performance_example.json is a list of size 100. Each data of the list is a dictionary formatted as:<br>
 
 {<br>
-    "prompt": ...,<br>
-    "response1": ...,<br>
-    "response2": ...,<br>
-    ...<br>
-    "response6": ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"prompt": ...,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"response1": ...,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"response2": ...,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"response6": ...<br>
 }<br>
 
 Each dictionary contains one prompt and 6 different responses generated from 6 models based on the prompt. There are 100 dictionaries with 100 different prompts and corresponding responses.<br>
