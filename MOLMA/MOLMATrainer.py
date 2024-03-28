@@ -45,8 +45,8 @@ def main():
     model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", trust_remote_code=True)
     ref_model = AutoModelForCausalLM.from_pretrained("microsoft/phi-2", trust_remote_code=True)
     critic_model = AutoModelForCausalLMWithValueHead.from_pretrained("microsoft/phi-2", trust_remote_code=True)
-    reward_model = PhiForSequenceClassification.from_pretrained('/home/yz20cf/RESEARCH/RM/PKUhelp300k')
-    reward_model2 = PhiForSequenceClassification.from_pretrained('/home/yz20cf/RESEARCH/RM/PKUsafe')
+    reward_model = PhiForSequenceClassification.from_pretrained('./RMhelp') # directory path of the RMhelp
+    reward_model2 = PhiForSequenceClassification.from_pretrained('./RMsafe') # directory path of the RMsafe
     with open(data_dir, 'r') as file:
         dataset = json.load(file)
     random.shuffle(dataset)
