@@ -31,21 +31,18 @@ import os
 import argparse
 import json
 from transformers import AutoConfig, AutoTokenizer, PhiForSequenceClassification
-# from RM import PhiForSequenceClassification 
 os.environ['MASTER_ADDR'] = 'localhost'
 os.environ['MASTER_PORT'] = '29500'
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3,4,5,6,7'
 tokenizer = AutoTokenizer.from_pretrained("microsoft/phi-2", trust_remote_code=True)
 tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 tokenizer.padding_side = "left" # Allow batched inference
 
-# WINDOW_SIZE = 2049
 BATCH_SIZE = 5
 EPOCHS = 1
 log_interval = 600
 eval_interval = 2400
 SEED = 30
-T_max = 8000
+T_max = 9000
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--nodes', default=1,type=int)
 parser.add_argument('-g', '--gpus', default=8, type=int)
@@ -53,15 +50,14 @@ parser.add_argument('-nr', '--nr', default=0, type=int)
 parser.add_argument("-f", "--fff", help="a dummy argument to fool ipython", default="1")
 args = parser.parse_args()
 args.world_size = args.gpus * args.nodes
-output_dir='./RMsafe'
+output_dir='./RMhelp'
 
 
 def main():
-    # dataset1 = load_dataset("stanfordnlp/shp", split='train').shuffle(seed=30).select(range(43835))
-    # dataset2 = load_dataset("Anthropic/hh-rlhf", data_dir='helpful-base', split="train")
-    dataset3 = load_dataset("Anthropic/hh-rlhf", data_dir='harmless-base', split="train")
-    dataset4 = load_dataset("PKU-Alignment/PKU-SafeRLHF", split="train").shuffle(seed=30)
-    dataset_merge = concatenate_datasets([dataset4, dataset3]).shuffle(seed=30)
+    dataset1 = load_dataset("stanfordnlp/shp", split='train').shuffle(seed=30).select(range(43835))
+    dataset2 = load_dataset("Anthropic/hh-rlhf", data_dir='helpful-base', split="train")
+    dataset3 = load_dataset("PKU-Alignment/PKU-SafeRLHF", split="train").shuffle(seed=30)
+    dataset_merge = concatenate_datasets([dataset1, dataset2, dataset3]).shuffle(seed=30)
     dataset = dataset_merge.train_test_split(0.05)
     
     config = AutoConfig.from_pretrained("microsoft/phi-2", trust_remote_code=True, num_labels=1, pad_token_id=tokenizer.pad_token_id)
@@ -81,31 +77,31 @@ class RMDataLoader(torch.utils.data.IterableDataset):
         self.dataset = dataset
     def __iter__(self):
         for data in self.dataset:
-            if data['prompt'] is not None:
+            if data['prompt'] is not None: # process data from PKU-Alignment/PKU-SafeRLHF (help)
                 x = tokenizer.encode("Instruct: " + data['prompt'].strip() + "\nOutput: " + \
                                      data['response_0'].strip() + '\n' + tokenizer.eos_token) 
                 y = tokenizer.encode("Instruct: " + data['prompt'].strip() + "\nOutput: " + \
                                      data['response_1'].strip() + '\n' + tokenizer.eos_token)
                 if len(x) > 512 or len(y) > 512:
                     continue
-                if data['safer_response_id'] == 0:
+                if data['better_response_id'] == 0:
                     yield x, y
                 else:
                     yield y, x
-            # elif data['history'] is not None:
-            #     prompt = "Instruct: " + data['history'].strip()
-            #     if data['labels'] == 0:
-            #         better1 = data['human_ref_B']
-            #         worse1 = data['human_ref_A']
-            #     else:
-            #         better1 = data['human_ref_A']
-            #         worse1 = data['human_ref_B']
-            #     better = tokenizer(prompt + '\nOutput: ' + better1.strip() + '\n' + tokenizer.eos_token).input_ids
-            #     worse = tokenizer(prompt + '\nOutput: ' + worse1.strip() + '\n' + tokenizer.eos_token).input_ids
-                # if len(better) > 512 or len(worse) > 512:
-                #     continue
-                # yield better, worse
-            else:
+            elif data['history'] is not None: # process data from stanford SHP
+                prompt = "Instruct: " + data['history'].strip()
+                if data['labels'] == 0:
+                    better1 = data['human_ref_B']
+                    worse1 = data['human_ref_A']
+                else:
+                    better1 = data['human_ref_A']
+                    worse1 = data['human_ref_B']
+                better = tokenizer(prompt + '\nOutput: ' + better1.strip() + '\n' + tokenizer.eos_token).input_ids
+                worse = tokenizer(prompt + '\nOutput: ' + worse1.strip() + '\n' + tokenizer.eos_token).input_ids
+                if len(better) > 512 or len(worse) > 512:
+                    continue
+                yield better, worse
+            else: # process data from Anthropic Helpful
                 better = tokenizer(data['chosen'].replace('\nHuman:', 'Instruct:').replace("\nAssistant:", "Output:").strip()+'\n'+tokenizer.eos_token).input_ids
                 worse = tokenizer(data['rejected'].replace('\nHuman:', 'Instruct:').replace("\nAssistant:", "Output:").strip()+'\n'+tokenizer.eos_token).input_ids
                 if len(better) > 512 or len(worse) > 512:
