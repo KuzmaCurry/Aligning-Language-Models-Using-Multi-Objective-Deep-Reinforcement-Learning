@@ -1,7 +1,10 @@
 **Revised Paper**
 ================
-The revised paper is provided as can be seen in Revision.pdf
+
+The revised paper is provided as can be seen in **Revision.pdf**<br>
+Revision parts are highlighted in red.
 <br><br>
+
 **Dataset**
 ===
 **Reward Models Datasets**
