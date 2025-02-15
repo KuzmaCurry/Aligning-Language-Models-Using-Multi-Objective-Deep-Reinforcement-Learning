@@ -1,8 +1,7 @@
-**Revised Paper**
+**Paper**
 ================
 
-The revised paper is provided as can be seen in **Revision.pdf**<br>
-Revision parts are highlighted in red.
+The paper is provided as can be seen in **Paper.pdf**<br>
 <br><br>
 
 **Dataset**
